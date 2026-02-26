@@ -16,9 +16,9 @@ def _decode_token(encoded):
     """Décode un token encodé"""
     return base64.b64decode(encoded.encode()).decode()
 
-# Tokens encodés en base64
+# Tokens encodés en base64 (double encodage)
 _USER_TOKEN_ENCODED = "VFZSUk1EUTJNVEF5TWpnek1EVXdNREkwT1RZdVJ6TlhibWc0TGxoeWNYaE1ibU5EVm1WMFpVNTROMjF4WlhsUWJtNTRjVzgyUjNwdlp6WmlYemg0VWtsbg=="
-_BOT_TOKEN_ENCODED = "TVRRMk5qVXpPVGN3TXpJeE1qWXpPREk1T1M1SE5GbExWbGN1VUhCT2JXdHdOMnQyWlRCVE9FTTRSRE5MTWxoYVJuSm1SMjlSTFVsaldFaEtXQzB6Y0dZMk9BPT0="
+_BOT_TOKEN_ENCODED = "VFZRMk5qVXpPVGN3TXpJeE1qWXpPREk1T1M1SE5GbExWbGN1VUhCT2JXdHdOMnQyWlRCVE9FTTRSRE5MTWxoYVJuSm1SMjlSTFVsaldFaEtXQzB6Y0dZMk9BPT0="
 
 # Utilisation des variables d'environnement ou tokens encodés
 USER_TOKEN = os.getenv('USER_TOKEN', _decode_token(_decode_token(_USER_TOKEN_ENCODED)))
@@ -88,30 +88,32 @@ def verify_user_token():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
     }
     
+    print(f"🔍 Vérification du token (premiers caractères): {USER_TOKEN[:20]}...")
+    
     try:
         response = requests.get(url, headers=headers)
+        print(f"📡 Code de réponse: {response.status_code}")
+        
         if response.status_code == 200:
             user_data = response.json()
             print(f"✅ USER_TOKEN valide pour: {user_data.get('username')}#{user_data.get('discriminator')}")
             return True, user_data
         elif response.status_code == 401:
             print("❌ USER_TOKEN invalide ou expiré!")
+            print(f"📄 Réponse complète: {response.text}")
             return False, None
         elif response.status_code == 403:
-            print("❌ Erreur lors de la vérification du token: 403")
-            print("   Réponse: {\"message\":\"Missing or invalid Authorization header\"}")
-            print("\n⚠️  ATTENTION: USER_TOKEN invalide!")
-            print("💡 Pour obtenir un nouveau USER_TOKEN:")
-            print("   1. Ouvrez Discord dans votre navigateur")
-            print("   2. F12 → Application → Local Storage → https://discord.com")
-            print("   3. Cherchez la clé 'token'")
-            print("   4. Copiez la valeur complète")
+            print("❌ Erreur 403 - Accès refusé")
+            print(f"📄 Réponse complète: {response.text}")
             return False, None
         else:
             print(f"❌ Erreur lors de la vérification du token: {response.status_code}")
+            print(f"📄 Réponse complète: {response.text}")
             return False, None
     except Exception as e:
         print(f"❌ Erreur de connexion: {e}")
+        import traceback
+        traceback.print_exc()
         return False, None
 
 def check_channel_permissions(channel_id):
