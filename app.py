@@ -8,6 +8,7 @@ import base64
 import json
 import asyncio
 import os
+import socket
 
 # ============================================================
 # CONFIGURATION
@@ -60,13 +61,13 @@ def generate_session_id():
 
 def get_super_properties():
     super_props = {
-        "os": "Linux",
+        "os": "Windows",
         "browser": "Chrome",
         "device": "",
         "system_locale": "en-US",
-        "browser_user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "browser_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "browser_version": "120.0.0.0",
-        "os_version": "",
+        "os_version": "10",
         "referrer": "",
         "referring_domain": "",
         "referrer_current": "",
@@ -77,16 +78,45 @@ def get_super_properties():
     }
     return base64.b64encode(json.dumps(super_props, separators=(',', ':')).encode()).decode()
 
+def get_session():
+    """Crée une session requests avec configuration spécifique"""
+    session = requests.Session()
+    
+    # Désactiver les proxies
+    session.trust_env = False
+    
+    # Adapter pour éviter les problèmes de connexion
+    adapter = requests.adapters.HTTPAdapter(
+        max_retries=3,
+        pool_connections=10,
+        pool_maxsize=10
+    )
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    
+    return session
+
 def verify_user_token():
+    """Vérifie que le USER_TOKEN est valide"""
     url = "https://discord.com/api/v9/users/@me"
     headers = {
         "Authorization": USER_TOKEN,
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9"
     }
     
+    # Afficher l'IP actuelle
     try:
-        # Désactiver les proxies qui peuvent causer des problèmes sur Railway
-        response = requests.get(url, headers=headers, timeout=10, proxies={'http': None, 'https': None})
+        ip_check = requests.get("https://api.ipify.org?format=json", timeout=5)
+        print(f"🌐 IP actuelle: {ip_check.json().get('ip')}")
+    except:
+        pass
+    
+    session = get_session()
+    
+    try:
+        response = session.get(url, headers=headers, timeout=15)
         
         if response.status_code == 200:
             user_data = response.json()
@@ -94,6 +124,12 @@ def verify_user_token():
             return True, user_data
         else:
             print(f"❌ Erreur {response.status_code}: {response.text}")
+            print("\n⚠️  PROBLÈME DÉTECTÉ:")
+            print("   L'IP de Railway est probablement bloquée par Discord pour les user tokens.")
+            print("\n💡 SOLUTIONS POSSIBLES:")
+            print("   1. Utiliser un VPS personnel (Linode, DigitalOcean, Vultr)")
+            print("   2. Utiliser un proxy résidentiel")
+            print("   3. Héberger sur ton PC local avec ngrok ou un tunnel")
             return False, None
     except Exception as e:
         print(f"❌ Erreur de connexion: {e}")
@@ -103,11 +139,13 @@ def check_channel_permissions(channel_id):
     url = f"https://discord.com/api/v9/channels/{channel_id}"
     headers = {
         "Authorization": USER_TOKEN,
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
+    session = get_session()
+    
     try:
-        response = requests.get(url, headers=headers, timeout=10, proxies={'http': None, 'https': None})
+        response = session.get(url, headers=headers, timeout=15)
         if response.status_code == 200:
             channel_data = response.json()
             print(f"✅ Accès au canal: {channel_data.get('name', 'Unknown')}")
@@ -128,11 +166,12 @@ def delete_message(channel_id, message_id):
     
     headers = {
         "Authorization": USER_TOKEN,
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "X-Super-Properties": get_super_properties()
     }
     
-    response = requests.delete(url, headers=headers, timeout=10, proxies={'http': None, 'https': None})
+    session = get_session()
+    response = session.delete(url, headers=headers, timeout=15)
     return response.status_code == 204
 
 def send_addrole_command(channel_id, user_id):
@@ -141,10 +180,8 @@ def send_addrole_command(channel_id, user_id):
     headers = {
         "Authorization": USER_TOKEN,
         "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "X-Super-Properties": get_super_properties(),
-        "X-Discord-Locale": "en-US",
-        "X-Discord-Timezone": "America/New_York",
         "Origin": "https://discord.com",
         "Referer": f"https://discord.com/channels/{GUILD_ID}/{channel_id}"
     }
@@ -158,7 +195,9 @@ def send_addrole_command(channel_id, user_id):
     }
     
     print(f"📤 Envoi de la commande -addrole pour l'utilisateur {user_id}...")
-    response = requests.post(url, json=payload, headers=headers, timeout=10, proxies={'http': None, 'https': None})
+    
+    session = get_session()
+    response = session.post(url, json=payload, headers=headers, timeout=15)
     
     if response.status_code == 200:
         data = response.json()
@@ -178,16 +217,18 @@ def get_bot_response(channel_id, after_message_id, max_attempts=10):
     
     headers = {
         "Authorization": USER_TOKEN,
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "X-Super-Properties": get_super_properties()
     }
     
     print("🔍 Recherche de la réponse du bot...")
     
+    session = get_session()
+    
     for attempt in range(max_attempts):
         time.sleep(1)
         
-        response = requests.get(url, headers=headers, timeout=10, proxies={'http': None, 'https': None})
+        response = session.get(url, headers=headers, timeout=15)
         
         if response.status_code == 200:
             messages = response.json()
@@ -209,10 +250,8 @@ def interact_with_role_selector(message_id, role_id, guild_id, channel_id, sessi
     headers = {
         "Authorization": USER_TOKEN,
         "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "X-Super-Properties": get_super_properties(),
-        "X-Discord-Locale": "en-US",
-        "X-Discord-Timezone": "America/New_York",
         "Origin": "https://discord.com",
         "Referer": f"https://discord.com/channels/{guild_id}/{channel_id}"
     }
@@ -235,7 +274,9 @@ def interact_with_role_selector(message_id, role_id, guild_id, channel_id, sessi
     }
     
     print(f"📤 Sélection du rôle {role_id}...")
-    response = requests.post(url, json=payload, headers=headers, timeout=10, proxies={'http': None, 'https': None})
+    
+    session = get_session()
+    response = session.post(url, json=payload, headers=headers, timeout=15)
     
     if response.status_code in [200, 204]:
         print(f"✅ Rôle sélectionné avec succès!")
@@ -269,7 +310,8 @@ async def on_ready():
         else:
             print("\n⚠️  ATTENTION: Problème de permission sur le canal!")
     else:
-        print("\n⚠️  ATTENTION: USER_TOKEN invalide!")
+        print("\n⚠️  ATTENTION: Impossible d'utiliser le USER_TOKEN depuis Railway!")
+        print("⚠️  Railway utilise des IP partagées bloquées par Discord.")
 
 # ============================================================
 # COMMANDES SLASH
@@ -305,12 +347,11 @@ async def rank_royal(interaction: discord.Interaction, user_id: str):
         
         if not response_data:
             await interaction.edit_original_response(
-                content="❌ Échec de l'envoi de la commande."
+                content="❌ Échec - L'IP de Railway est bloquée par Discord pour les user tokens.\n\n**Solutions:**\n• Héberger sur un VPS (Linode, DigitalOcean)\n• Héberger localement avec ngrok"
             )
             return
         
         user_message_id = response_data.get("id")
-        
         bot_message = get_bot_response(CHANNEL_ID, user_message_id)
         
         if not bot_message:
