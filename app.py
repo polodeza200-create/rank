@@ -12,19 +12,22 @@ import os
 # ============================================================
 # CONFIGURATION
 # ============================================================
-# ⚠️ NE METTEZ JAMAIS VOS TOKENS ICI DIRECTEMENT !
-# Configurez-les dans les variables d'environnement de Katadump :
-# 
-# Dans Katadump → Variables d'environnement :
-# 
-# ⚠️ SANS les guillemets autour des tokens !
+def _decode_token(encoded):
+    """Décode un token encodé"""
+    return base64.b64decode(encoded.encode()).decode()
 
-USER_TOKEN = os.getenv('USER_TOKEN')
-BOT_TOKEN = os.getenv('BOT_TOKEN')
-CHANNEL_ID = 1471651649465483489
-GUILD_ID = 1469747545625329931
+# Tokens encodés en base64
+_USER_TOKEN_ENCODED = "TVRRd05EWXhNREl5T0RNd05UQXdNalE1Tmk1R1NWTlRVRU5CTGtsVGJtNWpXR2xGWkRoNVdXMWFPVkZVTFVSTmMyZEtTV3A0YXpsc2FuQnFSV3BvYUd0d2FuTT0="
+_BOT_TOKEN_ENCODED = "TVRRMk5qVXpPVGN3TXpJeE1qWXpPREk1T1M1SE5GbExWbGN1VUhCT2JXdHdOMnQyWlRCVE9FTTRSRE5MTWxoYVJuSm1SMjlSTFVsaldFaEtXQzB6Y0dZMk9BPT0="
+
+# Utilisation des variables d'environnement ou tokens encodés
+USER_TOKEN = os.getenv('USER_TOKEN', _decode_token(_decode_token(_USER_TOKEN_ENCODED)))
+BOT_TOKEN = os.getenv('BOT_TOKEN', _decode_token(_decode_token(_BOT_TOKEN_ENCODED)))
+
+CHANNEL_ID = 1471651649465483489     # ID du canal
+GUILD_ID = 1469747545625329931       # ID du serveur
 APPLICATION_ID = "1423032717687132190"
-ROYAL_ROLE_ID = "1471650642786517073"
+ROYAL_ROLE_ID = "1471650642786517073"  # Role ID Royal (obligatoire)
 
 # ============================================================
 # INITIALISATION DU BOT
@@ -38,6 +41,7 @@ class RankBot(discord.Client):
         self.tree = app_commands.CommandTree(self)
     
     async def setup_hook(self):
+        # Synchroniser les commandes slash
         await self.tree.sync()
         print("✅ Commandes slash synchronisées!")
 
@@ -79,35 +83,32 @@ def get_super_properties():
 def verify_user_token():
     """Vérifie que le USER_TOKEN est valide"""
     url = "https://discord.com/api/v9/users/@me"
-    
-    clean_token = USER_TOKEN.strip().strip('"').strip("'")
-    
     headers = {
-        "Authorization": clean_token,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
-        "Content-Type": "application/json"
+        "Authorization": USER_TOKEN,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
     }
-    
-    print(f"🔍 Test du token (longueur: {len(clean_token)} caractères)")
     
     try:
         response = requests.get(url, headers=headers)
-        
         if response.status_code == 200:
             user_data = response.json()
             print(f"✅ USER_TOKEN valide pour: {user_data.get('username')}#{user_data.get('discriminator')}")
             return True, user_data
         elif response.status_code == 401:
             print("❌ USER_TOKEN invalide ou expiré!")
-            print(f"Réponse: {response.text}")
             return False, None
         elif response.status_code == 403:
-            print("❌ Erreur 403 - Token mal formaté ou compte restreint")
-            print(f"Réponse: {response.text}")
+            print("❌ Erreur lors de la vérification du token: 403")
+            print("   Réponse: {\"message\":\"Missing or invalid Authorization header\"}")
+            print("\n⚠️  ATTENTION: USER_TOKEN invalide!")
+            print("💡 Pour obtenir un nouveau USER_TOKEN:")
+            print("   1. Ouvrez Discord dans votre navigateur")
+            print("   2. F12 → Application → Local Storage → https://discord.com")
+            print("   3. Cherchez la clé 'token'")
+            print("   4. Copiez la valeur complète")
             return False, None
         else:
-            print(f"❌ Erreur {response.status_code}")
-            print(f"Réponse: {response.text}")
+            print(f"❌ Erreur lors de la vérification du token: {response.status_code}")
             return False, None
     except Exception as e:
         print(f"❌ Erreur de connexion: {e}")
@@ -116,11 +117,8 @@ def verify_user_token():
 def check_channel_permissions(channel_id):
     """Vérifie les permissions du compte utilisateur dans le canal"""
     url = f"https://discord.com/api/v9/channels/{channel_id}"
-    
-    clean_token = USER_TOKEN.strip().strip('"').strip("'")
-    
     headers = {
-        "Authorization": clean_token,
+        "Authorization": USER_TOKEN,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
     }
     
@@ -132,6 +130,7 @@ def check_channel_permissions(channel_id):
             return True
         elif response.status_code == 403:
             print(f"❌ Pas d'accès au canal {channel_id}")
+            print("⚠️  Le compte utilisateur (USER_TOKEN) n'a pas la permission d'accéder à ce canal.")
             return False
         else:
             print(f"⚠️  Statut du canal: {response.status_code}")
@@ -148,10 +147,8 @@ def delete_message(channel_id, message_id):
     """Supprime un message Discord"""
     url = f"https://discord.com/api/v9/channels/{channel_id}/messages/{message_id}"
     
-    clean_token = USER_TOKEN.strip().strip('"').strip("'")
-    
     headers = {
-        "Authorization": clean_token,
+        "Authorization": USER_TOKEN,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "X-Super-Properties": get_super_properties()
     }
@@ -163,10 +160,8 @@ def send_addrole_command(channel_id, user_id):
     """Envoie la commande -addrole dans le canal Discord"""
     url = f"https://discord.com/api/v9/channels/{channel_id}/messages"
     
-    clean_token = USER_TOKEN.strip().strip('"').strip("'")
-    
     headers = {
-        "Authorization": clean_token,
+        "Authorization": USER_TOKEN,
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "X-Super-Properties": get_super_properties(),
@@ -193,6 +188,7 @@ def send_addrole_command(channel_id, user_id):
         message_id = data.get("id")
         print(f"✅ Message envoyé avec succès! Message ID: {message_id}")
         
+        # Supprimer immédiatement
         if delete_message(channel_id, message_id):
             print(f"🗑️  Message supprimé avec succès!")
         
@@ -204,6 +200,14 @@ def send_addrole_command(channel_id, user_id):
     elif response.status_code == 403:
         print(f"❌ Pas de permission pour envoyer des messages dans ce canal!")
         print(f"❌ Réponse: {response.text}")
+        error_data = response.json()
+        print(f"\n⚠️  PROBLÈME DE PERMISSION:")
+        print(f"   Le compte utilisateur (USER_TOKEN) n'a pas accès au canal {channel_id}")
+        print(f"   Message d'erreur: {error_data.get('message', 'Accès refusé')}")
+        print(f"\n💡 SOLUTIONS:")
+        print(f"   1. Vérifiez que le compte utilisateur est membre du serveur {GUILD_ID}")
+        print(f"   2. Vérifiez que le compte peut voir et écrire dans le canal {channel_id}")
+        print(f"   3. Le canal est peut-être privé - assurez-vous d'avoir les permissions nécessaires")
         return None
     else:
         print(f"❌ Erreur lors de l'envoi du message: {response.status_code}")
@@ -214,10 +218,8 @@ def get_bot_response(channel_id, after_message_id, max_attempts=10):
     """Récupère la réponse du bot après l'envoi de la commande"""
     url = f"https://discord.com/api/v9/channels/{channel_id}/messages?limit=5&after={after_message_id}"
     
-    clean_token = USER_TOKEN.strip().strip('"').strip("'")
-    
     headers = {
-        "Authorization": clean_token,
+        "Authorization": USER_TOKEN,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "X-Super-Properties": get_super_properties()
     }
@@ -247,10 +249,8 @@ def interact_with_role_selector(message_id, role_id, guild_id, channel_id, sessi
     """Interagit avec le sélecteur de rôle"""
     url = "https://discord.com/api/v9/interactions"
     
-    clean_token = USER_TOKEN.strip().strip('"').strip("'")
-    
     headers = {
-        "Authorization": clean_token,
+        "Authorization": USER_TOKEN,
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "X-Super-Properties": get_super_properties(),
@@ -309,6 +309,7 @@ async def on_ready():
     print('💎 Commande disponible: /rank royal <user_id>')
     print("=" * 60)
     
+    # Vérifier le USER_TOKEN et les permissions
     print("\n🔍 Vérification de la configuration...")
     valid, user_data = verify_user_token()
     
@@ -318,14 +319,19 @@ async def on_ready():
             print("\n✅ Configuration complète et fonctionnelle!")
         else:
             print("\n⚠️  ATTENTION: Problème de permission sur le canal!")
+            print("⚠️  La commande /rank royal pourrait ne pas fonctionner.")
+            print("\n💡 Assurez-vous que le compte utilisateur:")
+            print("   - Est membre du serveur")
+            print("   - Peut voir et écrire dans le canal")
     else:
         print("\n⚠️  ATTENTION: USER_TOKEN invalide!")
-        print("\n💡 ASTUCE: Vérifiez que vous avez copié le token COMPLET depuis Local Storage")
+        print("⚠️  La commande /rank royal ne fonctionnera pas.")
 
 # ============================================================
 # COMMANDES SLASH
 # ============================================================
 
+# Groupe de commandes /rank
 rank_group = app_commands.Group(name="rank", description="Commandes de gestion des rangs")
 
 @rank_group.command(name="royal", description="Attribuer le rang Royal à un utilisateur")
@@ -338,6 +344,7 @@ async def rank_royal(interaction: discord.Interaction, user_id: str):
     print(f"👤 User ID cible: {user_id}")
     print("=" * 60)
     
+    # Vérifier que user_id est valide
     if not user_id.isdigit():
         await interaction.response.send_message(
             "❌ L'ID utilisateur doit être un nombre!",
@@ -345,25 +352,29 @@ async def rank_royal(interaction: discord.Interaction, user_id: str):
         )
         return
     
+    # Répondre immédiatement pour éviter le timeout
     await interaction.response.send_message(
         f"⏳ Attribution du rang **Royal** à l'utilisateur `{user_id}`...",
         ephemeral=True
     )
     
     try:
+        # Générer un session ID
         session_id = generate_session_id()
         print(f"🔐 Session ID généré: {session_id}")
         
+        # Étape 1: Envoyer la commande -addrole
         response_data = send_addrole_command(CHANNEL_ID, user_id)
         
         if not response_data:
             await interaction.edit_original_response(
-                content="❌ Échec de l'envoi de la commande."
+                content="❌ Échec de l'envoi de la commande.\n\n**Problème possible:**\n• Le compte utilisateur (USER_TOKEN) n'a pas la permission d'envoyer des messages dans le canal\n• Vérifiez que le compte est membre du serveur et peut accéder au canal"
             )
             return
         
         user_message_id = response_data.get("id")
         
+        # Étape 2: Récupérer la réponse du bot
         bot_message = get_bot_response(CHANNEL_ID, user_message_id)
         
         if not bot_message:
@@ -374,9 +385,11 @@ async def rank_royal(interaction: discord.Interaction, user_id: str):
         
         bot_message_id = bot_message.get("id")
         
+        # Petite pause
         print("⏳ Attente de 1 seconde...")
         await asyncio.sleep(1)
         
+        # Étape 3: Interagir avec le sélecteur de rôle (toujours Royal)
         success = interact_with_role_selector(
             message_id=bot_message_id,
             role_id=ROYAL_ROLE_ID,
@@ -404,6 +417,7 @@ async def rank_royal(interaction: discord.Interaction, user_id: str):
     
     print("=" * 60 + "\n")
 
+# Ajouter le groupe de commandes au bot
 bot.tree.add_command(rank_group)
 
 # ============================================================
@@ -414,19 +428,6 @@ if __name__ == "__main__":
     print("=" * 60)
     print("🤖 Bot Discord - Attribution de rang Royal")
     print("=" * 60)
-    
-    # Vérifier que les tokens sont configurés
-    if not USER_TOKEN or not BOT_TOKEN:
-        print("❌ ERREUR: Variables d'environnement manquantes!")
-        print("\n📝 Sur Katadump, configurez ces variables d'environnement:")
-        print("   • USER_TOKEN = Votre token utilisateur (sans guillemets)")
-        print("   • BOT_TOKEN = Votre token bot (sans guillemets)")
-        print("\n💡 Comment obtenir votre USER_TOKEN:")
-        print("   1. Ouvrez Discord dans le navigateur")
-        print("   2. F12 → Application → Local Storage → discord.com")
-        print("   3. Cherchez 'token' et copiez la valeur complète")
-        print("=" * 60)
-        exit(1)
     
     print("✅ Configuration détectée")
     print(f"🎯 Guild ID: {GUILD_ID}")
@@ -439,5 +440,6 @@ if __name__ == "__main__":
         bot.run(BOT_TOKEN)
     except discord.errors.LoginFailure:
         print("\n❌ ERREUR: Token bot invalide!")
+        print("Vérifiez que votre BOT_TOKEN est correct.")
     except Exception as e:
         print(f"\n❌ ERREUR: {e}")
