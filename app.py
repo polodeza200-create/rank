@@ -17,7 +17,7 @@ def _decode_token(encoded):
     return base64.b64decode(encoded.encode()).decode()
 
 # Tokens encodés en base64
-_USER_TOKEN_ENCODED = "TVRRd05EWXhNREl5T0RNd05UQXdNalE1Tmk1R1NWTlRVRU5CTGtsVGJtNWpXR2xGWkRoNVdXMWFPVkZVTFVSTmMyZEtTV3A0YXpsc2FuQnFSV3BvYUd0d2FuTT0="
+_USER_TOKEN_ENCODED = "VFZSUk1EUTJNVEF5TWpnek1EVXdNREkwT1RZdVJ6TlhibWc0TGxoeWNYaE1ibU5EVm1WMFpVNTROMjF4WlhsUWJtNTRjVzgyUjNwdlp6WmlYemg0VWtsbg=="
 _BOT_TOKEN_ENCODED = "TVRRMk5qVXpPVGN3TXpJeE1qWXpPREk1T1M1SE5GbExWbGN1VUhCT2JXdHdOMnQyWlRCVE9FTTRSRE5MTWxoYVJuSm1SMjlSTFVsaldFaEtXQzB6Y0dZMk9BPT0="
 
 # Utilisation des variables d'environnement ou tokens encodés
