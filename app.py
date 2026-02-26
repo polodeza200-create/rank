@@ -12,8 +12,15 @@ import os
 # ============================================================
 # CONFIGURATION
 # ============================================================
-USER_TOKEN = "MTQwNDYxMDIyODMwNTAwMjQ5Ng.GXryVg.b_gDfW1UGTu2MGlR0udOOcNWZYRy10ZU2CGjAs"
-BOT_TOKEN = "MTQ3NjUzOTcwMzIxMjYzODI5OQ.GoJiWd.my8w-1hkA448RP7vJyVLwaE05LKTD4oqoSND5w"
+# ⚠️ NE METTEZ JAMAIS VOS TOKENS ICI DIRECTEMENT !
+# Configurez-les dans les variables d'environnement de Katadump :
+# 
+# Dans Katadump → Variables d'environnement :
+# 
+# ⚠️ SANS les guillemets autour des tokens !
+
+USER_TOKEN = os.getenv('USER_TOKEN')
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 CHANNEL_ID = 1471651649465483489
 GUILD_ID = 1469747545625329931
 APPLICATION_ID = "1423032717687132190"
@@ -73,13 +80,15 @@ def verify_user_token():
     """Vérifie que le USER_TOKEN est valide"""
     url = "https://discord.com/api/v9/users/@me"
     
+    clean_token = USER_TOKEN.strip().strip('"').strip("'")
+    
     headers = {
-        "Authorization": USER_TOKEN,
+        "Authorization": clean_token,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "Content-Type": "application/json"
     }
     
-    print(f"🔍 Test du token (longueur: {len(USER_TOKEN)} caractères)")
+    print(f"🔍 Test du token (longueur: {len(clean_token)} caractères)")
     
     try:
         response = requests.get(url, headers=headers)
@@ -108,8 +117,10 @@ def check_channel_permissions(channel_id):
     """Vérifie les permissions du compte utilisateur dans le canal"""
     url = f"https://discord.com/api/v9/channels/{channel_id}"
     
+    clean_token = USER_TOKEN.strip().strip('"').strip("'")
+    
     headers = {
-        "Authorization": USER_TOKEN,
+        "Authorization": clean_token,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
     }
     
@@ -137,8 +148,10 @@ def delete_message(channel_id, message_id):
     """Supprime un message Discord"""
     url = f"https://discord.com/api/v9/channels/{channel_id}/messages/{message_id}"
     
+    clean_token = USER_TOKEN.strip().strip('"').strip("'")
+    
     headers = {
-        "Authorization": USER_TOKEN,
+        "Authorization": clean_token,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "X-Super-Properties": get_super_properties()
     }
@@ -150,8 +163,10 @@ def send_addrole_command(channel_id, user_id):
     """Envoie la commande -addrole dans le canal Discord"""
     url = f"https://discord.com/api/v9/channels/{channel_id}/messages"
     
+    clean_token = USER_TOKEN.strip().strip('"').strip("'")
+    
     headers = {
-        "Authorization": USER_TOKEN,
+        "Authorization": clean_token,
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "X-Super-Properties": get_super_properties(),
@@ -199,8 +214,10 @@ def get_bot_response(channel_id, after_message_id, max_attempts=10):
     """Récupère la réponse du bot après l'envoi de la commande"""
     url = f"https://discord.com/api/v9/channels/{channel_id}/messages?limit=5&after={after_message_id}"
     
+    clean_token = USER_TOKEN.strip().strip('"').strip("'")
+    
     headers = {
-        "Authorization": USER_TOKEN,
+        "Authorization": clean_token,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "X-Super-Properties": get_super_properties()
     }
@@ -230,8 +247,10 @@ def interact_with_role_selector(message_id, role_id, guild_id, channel_id, sessi
     """Interagit avec le sélecteur de rôle"""
     url = "https://discord.com/api/v9/interactions"
     
+    clean_token = USER_TOKEN.strip().strip('"').strip("'")
+    
     headers = {
-        "Authorization": USER_TOKEN,
+        "Authorization": clean_token,
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "X-Super-Properties": get_super_properties(),
@@ -301,6 +320,7 @@ async def on_ready():
             print("\n⚠️  ATTENTION: Problème de permission sur le canal!")
     else:
         print("\n⚠️  ATTENTION: USER_TOKEN invalide!")
+        print("\n💡 ASTUCE: Vérifiez que vous avez copié le token COMPLET depuis Local Storage")
 
 # ============================================================
 # COMMANDES SLASH
@@ -395,8 +415,16 @@ if __name__ == "__main__":
     print("🤖 Bot Discord - Attribution de rang Royal")
     print("=" * 60)
     
+    # Vérifier que les tokens sont configurés
     if not USER_TOKEN or not BOT_TOKEN:
-        print("❌ ERREUR: Tokens manquants!")
+        print("❌ ERREUR: Variables d'environnement manquantes!")
+        print("\n📝 Sur Katadump, configurez ces variables d'environnement:")
+        print("   • USER_TOKEN = Votre token utilisateur (sans guillemets)")
+        print("   • BOT_TOKEN = Votre token bot (sans guillemets)")
+        print("\n💡 Comment obtenir votre USER_TOKEN:")
+        print("   1. Ouvrez Discord dans le navigateur")
+        print("   2. F12 → Application → Local Storage → discord.com")
+        print("   3. Cherchez 'token' et copiez la valeur complète")
         print("=" * 60)
         exit(1)
     
