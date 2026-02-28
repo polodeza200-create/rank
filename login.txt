@@ -1,0 +1,149 @@
+╔══════════════════════════════════════════════════════╗
+║  IntelScry Stealerlogs Export                        ║
+╠══════════════════════════════════════════════════════╣
+║  Query:    fluxstress.to                            ║
+║  Date:     28/02/2026                               ║
+║  Results:  18 credentials                           ║
+╚══════════════════════════════════════════════════════╝
+
+ #01
+   URL:       https://fluxstress.to/register
+   User:      nstefanov17
+   Password:  881125Nn@
+   path:      ["/register"]
+   pwned_at:  2026-02-15T15:01:53Z
+   indexed_at: 2026-02-26T16:42:36Z
+────────────────────────────────────────────────────────
+   URL:       https://fluxstress.to/register
+   User:      polodeza200
+   Password:  polodeza200
+   path:      ["/register"]
+   pwned_at:  2026-02-15T15:01:53Z
+   indexed_at: 2026-02-26T16:42:36Z
+────────────────────────────────────────────────────────
+ #02
+   URL:       https://fluxstress.to/join
+   User:      oussamaattaf334@gmail.com
+   Password:  svbmy58k
+   path:      ["/join"]
+   pwned_at:  2026-02-14T21:28:22Z
+   indexed_at: 2026-02-19T20:55:14Z
+────────────────────────────────────────────────────────
+ #03
+   URL:       https://fluxstress.to/join
+   User:      mohamedharbi
+   Password:  8tHCVkVhtZwd3G@
+   path:      ["/join"]
+   pwned_at:  2026-02-14T21:28:22Z
+   indexed_at: 2026-02-28T07:52:28Z
+────────────────────────────────────────────────────────
+ #04
+   URL:       https://fluxstress.to/join
+   User:      riccardo
+   Password:  6rBGiN8Sxt@bqAP
+   path:      ["/join"]
+   pwned_at:  2026-02-13T01:41:11Z
+   indexed_at: 2026-02-28T07:52:19Z
+────────────────────────────────────────────────────────
+ #05
+   URL:       https://fluxstress.to/join
+   User:      player781
+   Password:  mzfelol1
+   path:      ["/join"]
+   pwned_at:  2026-02-08T15:41:21Z
+   indexed_at: 2026-02-27T06:14:42Z
+────────────────────────────────────────────────────────
+ #06
+   URL:       https://fluxstress.to/register
+   User:      amyzyxr
+   Password:  fuck007@@
+   path:      ["/register"]
+   pwned_at:  2026-02-06T11:18:54Z
+   indexed_at: 2026-02-28T05:58:32Z
+────────────────────────────────────────────────────────
+ #07
+   URL:       https://fluxstress.to
+   User:      liquid
+   Password:  YjB3L85MJE+*5Mr
+   pwned_at:  2026-01-27T02:14:15Z
+   indexed_at: 2026-02-20T21:06:04Z
+────────────────────────────────────────────────────────
+ #08
+   URL:       https://fluxstress.to/register
+   User:      duddzy1337
+   Password:  DuddzY1337
+   path:      ["/register"]
+   pwned_at:  2026-01-21T23:42:09Z
+   indexed_at: 2026-02-27T17:42:56Z
+────────────────────────────────────────────────────────
+ #09
+   URL:       https://fluxstress.to/register
+   User:      leinedlol
+   Password:  Niggerhunter1
+   path:      ["/register"]
+   pwned_at:  2025-12-24T16:09:04Z
+   indexed_at: 2026-02-02T09:15:59Z
+────────────────────────────────────────────────────────
+ #10
+   URL:       https://fluxstress.to/register
+   User:      stlz123
+   Password:  Asz69XqyALcZPaU
+   path:      ["/register"]
+   pwned_at:  2025-11-21T17:01:49Z
+   indexed_at: 2026-02-26T21:28:27Z
+────────────────────────────────────────────────────────
+ #11
+   URL:       https://fluxstress.to/register
+   User:      urssroot
+   Password:  EgUA3W4rys9Yc8P
+   path:      ["/register"]
+   pwned_at:  2025-11-21T17:01:49Z
+   indexed_at: 2026-02-26T21:28:27Z
+────────────────────────────────────────────────────────
+ #12
+   URL:       https://fluxstress.to
+   User:      —
+   Password:  sMQ,bv'jk"pm@5d
+   indexed_at: 2026-02-27T08:57:57Z
+────────────────────────────────────────────────────────
+ #13
+   URL:       https://fluxstress.to/register
+   User:      piotrdurszlak
+   Password:  Pitahaja123
+   path:      ["/register"]
+   indexed_at: 2026-02-28T07:11:36Z
+────────────────────────────────────────────────────────
+ #14
+   URL:       https://fluxstress.to/join
+   User:      juanra1
+   Password:  Plata128#
+   path:      ["/join"]
+   indexed_at: 2026-02-28T01:37:58Z
+────────────────────────────────────────────────────────
+ #15
+   URL:       https://fluxstress.to
+   User:      playerexq
+   Password:  Macabra0912!
+   indexed_at: 2026-02-26T17:38:56Z
+────────────────────────────────────────────────────────
+ #16
+   URL:       https://fluxstress.to/login
+   User:      jackdos
+   Password:  Jack123
+   path:      ["/login"]
+   indexed_at: 2026-02-26T03:37:43Z
+────────────────────────────────────────────────────────
+ #17
+   URL:       https://fluxstress.to/login
+   User:      doseri
+   Password:  ylexarsiro1_
+   path:      ["/login"]
+   indexed_at: 2026-02-25T05:07:42Z
+────────────────────────────────────────────────────────
+ #18
+   URL:       https://fluxstress.to/login
+   User:      ylimbesta
+   Password:  yleyleyle
+   path:      ["/login"]
+   indexed_at: 2026-02-25T05:07:42Z
+────────────────────────────────────────────────────────
